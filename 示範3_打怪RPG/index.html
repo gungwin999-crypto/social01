@@ -952,6 +952,7 @@
           clearTimeout(timeoutId);
           state.questions = parsed;
           sourceStatus.textContent = `線上題庫 · ${parsed.length} 題`;
+          loadingScreen.classList.remove("active");
           startGame();
           return;
         } catch (error) {
@@ -968,6 +969,7 @@
       await new Promise((resolve) => setTimeout(resolve, 1500));
       state.questions = SAMPLE_QUESTIONS;
       sourceStatus.textContent = `內建題庫 · ${SAMPLE_QUESTIONS.length} 題`;
+      loadingScreen.classList.remove("active");
       startGame();
     }
 
