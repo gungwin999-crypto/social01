@@ -101,8 +101,10 @@
     }
 
     .coin-box.pop { animation: coinPop .35s ease; }
-    .screen { display: none; min-height: 598px; }
-    .screen.active { display: block; }
+    .screen,
+    .screen[hidden] { display: none !important; min-height: 598px; }
+    .screen.active:not([hidden]) { display: block !important; }
+    .screen.loading.active:not([hidden]) { display: grid !important; }
 
     .loading {
       min-height: 598px;
@@ -664,7 +666,7 @@
       </div>
     </section>
 
-    <section class="screen battle-screen" id="battleScreen">
+    <section class="screen battle-screen" id="battleScreen" hidden aria-hidden="true">
       <div class="stage-row">
         <div class="stage-label" id="stageLabel">STAGE 1 / 5</div>
         <div class="inventory-mini" id="inventoryMini"></div>
@@ -702,7 +704,7 @@
       <div class="critical-text" id="criticalText">CRITICAL!</div>
     </section>
 
-    <section class="screen shop-screen" id="shopScreen">
+    <section class="screen shop-screen" id="shopScreen" hidden aria-hidden="true">
       <div class="shop-title">
         <h2>旅人商店</h2>
         <p>整備裝備，再前往下一個關卡。</p>
@@ -728,7 +730,7 @@
       <button class="continue-button" id="continueButton">前往下一關 →</button>
     </section>
 
-    <section class="screen end-screen" id="victoryScreen">
+    <section class="screen end-screen" id="victoryScreen" hidden aria-hidden="true">
       <div class="end-card">
         <div class="end-icon">🏆</div>
         <h2>冒險通關！</h2>
@@ -742,7 +744,7 @@
       </div>
     </section>
 
-    <section class="screen end-screen game-over" id="gameOverScreen">
+    <section class="screen end-screen game-over" id="gameOverScreen" hidden aria-hidden="true">
       <div class="end-card">
         <div class="end-icon">💀</div>
         <h2>GAME OVER</h2>
@@ -952,7 +954,6 @@
           clearTimeout(timeoutId);
           state.questions = parsed;
           sourceStatus.textContent = `線上題庫 · ${parsed.length} 題`;
-          loadingScreen.classList.remove("active");
           startGame();
           return;
         } catch (error) {
@@ -969,12 +970,17 @@
       await new Promise((resolve) => setTimeout(resolve, 1500));
       state.questions = SAMPLE_QUESTIONS;
       sourceStatus.textContent = `內建題庫 · ${SAMPLE_QUESTIONS.length} 題`;
-      loadingScreen.classList.remove("active");
       startGame();
     }
 
     function showScreen(screen) {
-      document.querySelectorAll(".screen").forEach((item) => item.classList.remove("active"));
+      document.querySelectorAll(".screen").forEach((item) => {
+        item.classList.remove("active");
+        item.hidden = true;
+        item.setAttribute("aria-hidden", "true");
+      });
+      screen.hidden = false;
+      screen.setAttribute("aria-hidden", "false");
       screen.classList.add("active");
     }
 
