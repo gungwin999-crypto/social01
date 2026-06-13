@@ -222,6 +222,16 @@
 
     .gate-card h2 { margin: 0 0 5px; color: var(--gold-light); }
     .gate-card > p { margin: 0 0 20px; color: var(--muted); font-size: .84rem; }
+    .gate-card .gate-cert-status {
+      width: fit-content;
+      margin: -10px auto 18px;
+      padding: 6px 12px;
+      border: 1px solid rgba(255,226,154,.45);
+      border-radius: 999px;
+      color: var(--gold-light);
+      background: rgba(255,226,154,.08);
+      font-weight: 800;
+    }
 
     .slots {
       display: grid;
@@ -483,6 +493,7 @@
       <button class="close" id="closeGate" aria-label="關閉">×</button>
       <h2 id="gateTitle">星光中央大門</h2>
       <p>把背包中的憑證拖到對應凹槽。集齊三枚，中央大門才會開啟。</p>
+      <p class="gate-cert-status" id="gateCertStatus"></p>
       <div class="slots" id="slots"></div>
       <div class="backpack">
         <div class="backpack-title">🎒 憑證背包</div>
@@ -532,6 +543,7 @@
     const endingTitle = document.getElementById("endingTitle");
     const endingNarration = document.getElementById("endingNarration");
     const endingCounter = document.getElementById("endingCounter");
+    const gateCertStatus = document.getElementById("gateCertStatus");
 
     const ENDING_SCENES = [
       {
@@ -600,11 +612,15 @@
       });
     }
 
-    function openGateModal() {
+    function openGateModal(event) {
+      event?.preventDefault();
+      event?.stopPropagation();
       ensureAdventureStart();
       placed = new Set();
       victory.classList.remove("show");
       renderGate();
+      const ownedCount = LEVELS.filter(hasCertificate).length;
+      gateCertStatus.textContent = `已取得 ${ownedCount} / 3 枚憑證`;
       gateModal.classList.add("open");
     }
 
@@ -780,6 +796,7 @@
     }
 
     function clearLocalProgress() {
+      if (!window.confirm("確定要清除三個關卡的所有進度嗎？")) return;
       localStorage.clear();
       placed = new Set();
       victory.classList.remove("show");
@@ -789,6 +806,7 @@
     }
 
     function restartAdventure() {
+      if (!window.confirm("確定要開始新的冒險嗎？目前三枚憑證會被清除。")) return;
       localStorage.clear();
       sessionStorage.clear();
       window.location.reload();
@@ -807,8 +825,16 @@
     gateModal.addEventListener("click", (event) => {
       if (event.target === gateModal) gateModal.classList.remove("open");
     });
-    clearProgress.addEventListener("click", clearLocalProgress);
-    againButton.addEventListener("click", restartAdventure);
+    clearProgress.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      clearLocalProgress();
+    });
+    againButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      restartAdventure();
+    });
     window.addEventListener("pageshow", renderMap);
 
     initializeCover();
