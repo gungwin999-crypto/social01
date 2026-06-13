@@ -313,6 +313,108 @@
     .victory h2 { margin: 0 0 8px; color: var(--gold-light); font-size: 2.4rem; }
     .victory p { color: #e5dac3; font-size: 1.05rem; }
 
+    .ending-story {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: white;
+      background: #11142b;
+      opacity: 0;
+      visibility: hidden;
+      cursor: pointer;
+      transition: opacity .55s ease, visibility .55s ease;
+    }
+
+    .ending-story.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .ending-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(1.025);
+      transition: opacity .7s ease, transform 1.3s ease;
+    }
+
+    .ending-story.scene-visible .ending-image {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .ending-shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(8,10,24,.08) 46%, rgba(8,10,24,.82) 100%),
+        linear-gradient(90deg, rgba(8,10,24,.14), transparent 35%, transparent 65%, rgba(8,10,24,.14));
+      pointer-events: none;
+    }
+
+    .ending-copy {
+      position: absolute;
+      left: 50%;
+      bottom: clamp(30px, 7vh, 72px);
+      width: min(880px, calc(100% - 36px));
+      padding: 22px 28px;
+      border: 1px solid rgba(255,232,166,.5);
+      border-radius: 18px;
+      background: rgba(18,16,34,.68);
+      box-shadow: 0 16px 48px rgba(0,0,0,.34), inset 0 0 24px rgba(255,221,138,.06);
+      backdrop-filter: blur(8px);
+      text-align: center;
+      opacity: 0;
+      transform: translate(-50%, 12px);
+      transition: opacity .7s .28s ease, transform .7s .28s ease;
+    }
+
+    .ending-story.scene-visible .ending-copy {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .ending-title {
+      margin: 0 0 9px;
+      color: var(--gold-light);
+      font-size: clamp(1.25rem, 3.2vw, 2rem);
+      letter-spacing: .16em;
+      text-shadow: 0 2px 12px rgba(255,209,104,.3);
+    }
+
+    .ending-narration {
+      margin: 0;
+      font-size: clamp(1rem, 2.3vw, 1.35rem);
+      line-height: 1.8;
+      letter-spacing: .06em;
+      text-shadow: 0 2px 8px rgba(0,0,0,.55);
+    }
+
+    .ending-hint {
+      margin-top: 12px;
+      color: rgba(255,244,214,.67);
+      font-size: .72rem;
+      letter-spacing: .12em;
+    }
+
+    .ending-counter {
+      position: absolute;
+      top: 20px;
+      right: 22px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      color: rgba(255,248,225,.82);
+      background: rgba(12,14,29,.48);
+      font-size: .75rem;
+      backdrop-filter: blur(5px);
+    }
+
     .again-button {
       min-width: 180px;
       min-height: 48px;
@@ -396,6 +498,17 @@
     </div>
   </div>
 
+  <section class="ending-story" id="endingStory" role="button" tabindex="0" aria-label="點擊繼續結局劇情">
+    <img class="ending-image" id="endingImage" alt="">
+    <div class="ending-shade"></div>
+    <div class="ending-counter" id="endingCounter">1 / 4</div>
+    <div class="ending-copy">
+      <h2 class="ending-title" id="endingTitle">三印啟門</h2>
+      <p class="ending-narration" id="endingNarration"></p>
+      <div class="ending-hint">點擊任意位置繼續</div>
+    </div>
+  </section>
+
   <script>
     const LEVELS = [
       { id: "dynasty", icon: "🎴", label: "朝代", certName: "朝代之印", key: "cert_dynasty" },
@@ -414,9 +527,39 @@
     const victory = document.getElementById("victory");
     const adventureTime = document.getElementById("adventureTime");
     const againButton = document.getElementById("againButton");
+    const endingStory = document.getElementById("endingStory");
+    const endingImage = document.getElementById("endingImage");
+    const endingTitle = document.getElementById("endingTitle");
+    const endingNarration = document.getElementById("endingNarration");
+    const endingCounter = document.getElementById("endingCounter");
+
+    const ENDING_SCENES = [
+      {
+        image: "三枚憑證歸位.png",
+        alt: "三枚憑證飛向中央大門的凹槽",
+        text: "三段旅程沒有消失，它們只是安靜地回到門上。"
+      },
+      {
+        image: "大門打開.png",
+        alt: "中央大門在溫暖星光中緩緩開啟",
+        text: "真正被打開的，從來不只是門。"
+      },
+      {
+        image: "知識群島.png",
+        alt: "三座知識島嶼以星光橋梁彼此相連",
+        text: "答對的題，成了路。答錯的題，也成了路旁的燈。"
+      },
+      {
+        image: "新的地圖.png",
+        alt: "巫師與夥伴站在尚未完成的新星圖前",
+        text: "「那就把下一個未知，也標在地圖上吧。」"
+      }
+    ];
 
     let placed = new Set();
     let pointerDrag = null;
+    let endingIndex = 0;
+    let endingTransitioning = false;
 
     function hasCertificate(level) {
       return localStorage.getItem(level.key) === "true";
@@ -520,7 +663,7 @@
         badge.classList.remove("dragging");
         badge.draggable = false;
         slot.appendChild(badge);
-        if (placed.size === 3) showVictory();
+        if (placed.size === 3) setTimeout(startEndingStory, 450);
       } else {
         slot.classList.remove("wrong");
         void slot.offsetWidth;
@@ -586,12 +729,53 @@
       pointerDrag = null;
     }
 
+    function startEndingStory() {
+      gateModal.classList.remove("open");
+      endingIndex = 0;
+      endingTransitioning = false;
+      endingStory.classList.add("show");
+      renderEndingScene();
+    }
+
+    function renderEndingScene() {
+      const scene = ENDING_SCENES[endingIndex];
+      endingStory.classList.remove("scene-visible");
+      endingImage.src = scene.image;
+      endingImage.alt = scene.alt;
+      endingTitle.textContent = endingIndex === 0 ? "三印啟門" : "";
+      endingNarration.textContent = scene.text;
+      endingCounter.textContent = `${endingIndex + 1} / ${ENDING_SCENES.length}`;
+
+      const reveal = () => requestAnimationFrame(() => endingStory.classList.add("scene-visible"));
+      if (endingImage.complete) reveal();
+      else endingImage.addEventListener("load", reveal, { once: true });
+    }
+
+    function advanceEnding() {
+      if (!endingStory.classList.contains("show") || endingTransitioning) return;
+      endingTransitioning = true;
+      endingStory.classList.remove("scene-visible");
+
+      setTimeout(() => {
+        if (endingIndex < ENDING_SCENES.length - 1) {
+          endingIndex += 1;
+          renderEndingScene();
+          endingTransitioning = false;
+        } else {
+          endingStory.classList.remove("show");
+          endingTransitioning = false;
+          showVictory();
+        }
+      }, 560);
+    }
+
     function showVictory() {
       const startedAt = Number(localStorage.getItem("adventure_start")) || Date.now();
       const totalSeconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       adventureTime.textContent = `${String(minutes).padStart(2, "0")} 分 ${String(seconds).padStart(2, "0")} 秒`;
+      gateModal.classList.add("open");
       victory.classList.add("show");
     }
 
@@ -613,6 +797,10 @@
     cover.addEventListener("click", enterMap);
     cover.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") enterMap();
+    });
+    endingStory.addEventListener("click", advanceEnding);
+    endingStory.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") advanceEnding();
     });
     openGate.addEventListener("click", openGateModal);
     closeGate.addEventListener("click", () => gateModal.classList.remove("open"));
