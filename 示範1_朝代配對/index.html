@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>朝代配對｜中國歷史事件挑戰</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&display=swap");
+
+    :root {
+      --ink: #100d0c;
+      --ink-soft: #1d1715;
+      --panel: #261d19;
+      --paper: #f1dfb4;
+      --paper-dark: #ddc58f;
+      --gold: #d9ad55;
+      --gold-light: #f4d889;
+      --gold-dark: #806126;
+      --red: #9e2e2b;
+      --red-light: #dc5c4f;
+      --green: #448458;
+      --green-light: #79b889;
+      --text: #f5ead4;
+      --muted: #b9a88e;
+      --line: rgba(217, 173, 85, .27);
+      --shadow: 0 20px 55px rgba(0, 0, 0, .38);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(45deg, rgba(217,173,85,.025) 25%, transparent 25%) 0 0/28px 28px,
+        linear-gradient(-45deg, rgba(217,173,85,.02) 25%, transparent 25%) 0 0/28px 28px,
+        radial-gradient(circle at 50% 0, rgba(158,46,43,.18), transparent 32rem),
+        var(--ink);
+      font-family: "Noto Serif TC", "PMingLiU", serif;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      width: min(1440px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    .masthead {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+      padding: 19px 22px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(29, 23, 21, .92);
+      box-shadow: var(--shadow);
+    }
+
+    .masthead::before,
+    .masthead::after {
+      content: "";
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      width: 4px;
+      background: var(--red);
+    }
+
+    .masthead::before { left: 8px; }
+    .masthead::after { right: 8px; }
+
+    .title-row { display: flex; align-items: center; gap: 16px; }
+
+    .seal {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 2px solid #e07868;
+      color: #f1b5aa;
+      background: var(--red);
+      box-shadow: inset 0 0 0 3px #6e201e;
+      font-size: 1.55rem;
+      font-weight: 900;
+      writing-mode: vertical-rl;
+      line-height: 1;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--gold-light);
+      font-size: clamp(1.65rem, 4vw, 2.65rem);
+      letter-spacing: .12em;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .attempt-box {
+      min-width: 120px;
+      padding: 9px 15px;
+      border: 1px solid var(--gold-dark);
+      background: rgba(217,173,85,.06);
+      text-align: center;
+    }
+
+    .attempt-box span {
+      display: block;
+      color: var(--muted);
+      font-size: .7rem;
+      letter-spacing: .15em;
+    }
+
+    .attempt-box strong {
+      color: var(--gold-light);
+      font-size: 1.6rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(520px, 1.12fr) minmax(380px, .88fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(29, 23, 21, .9);
+      box-shadow: var(--shadow);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      color: var(--gold-light);
+      font-size: 1.15rem;
+      letter-spacing: .08em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .73rem;
+    }
+
+    .dynasty-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      padding: 17px;
+    }
+
+    .dynasty-card {
+      overflow: hidden;
+      min-height: 195px;
+      border: 2px solid var(--gold);
+      border-radius: 5px;
+      background: var(--paper);
+      box-shadow: inset 0 0 0 4px rgba(128,97,38,.16);
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .dynasty-name {
+      padding: 8px 12px 10px;
+      border-bottom: 2px solid var(--gold-dark);
+      color: #3c291c;
+      background:
+        linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent),
+        var(--paper-dark);
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: .22em;
+      text-align: center;
+    }
+
+    .drop-zone {
+      min-height: 138px;
+      display: flex;
+      align-content: flex-start;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 12px;
+      cursor: pointer;
+    }
+
+    .drop-zone:empty::before {
+      content: "將事件放置於此";
+      width: 100%;
+      padding-top: 42px;
+      color: rgba(74,53,35,.52);
+      font-size: .77rem;
+      letter-spacing: .08em;
+      text-align: center;
+    }
+
+    .dynasty-card.drag-over,
+    .dynasty-card.selected-target {
+      border-color: var(--gold-light);
+      box-shadow: 0 0 0 4px rgba(244,216,137,.22), 0 0 28px rgba(217,173,85,.28);
+      transform: translateY(-2px);
+    }
+
+    .dynasty-card.wrong {
+      animation: wrongFlash .3s ease;
+    }
+
+    .event-panel {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .progress {
+      color: var(--gold-light);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .event-list {
+      min-height: 340px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 16px;
+      scrollbar-color: var(--gold-dark) var(--ink-soft);
+    }
+
+    .event-card {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px;
+      border: 1px solid var(--red-light);
+      border-left-width: 4px;
+      border-radius: 4px;
+      color: var(--text);
+      background:
+        linear-gradient(135deg, rgba(158,46,43,.12), transparent 65%),
+        #211816;
+      box-shadow: 0 7px 15px rgba(0,0,0,.2);
+      cursor: grab;
+      transition: opacity .15s ease, transform .15s ease, border-color .15s ease;
+    }
+
+    .event-card:hover {
+      border-color: #ef7a6d;
+      transform: translateY(-2px);
+    }
+
+    .event-card:active { cursor: grabbing; }
+    .event-card.dragging { opacity: .34; transform: scale(.96); }
+    .event-card.selected {
+      border-color: var(--gold-light);
+      box-shadow: 0 0 0 3px rgba(244,216,137,.18);
+    }
+
+    .event-icon { flex: 0 0 auto; font-size: 1.45rem; }
+    .event-text { font-size: .88rem; line-height: 1.4; }
+
+    .event-card.matched {
+      min-height: 0;
+      width: auto;
+      max-width: 100%;
+      gap: 5px;
+      padding: 5px 8px;
+      border: 1px solid #4f9b66;
+      border-left-width: 3px;
+      border-radius: 3px;
+      color: #eaffed;
+      background: #326143;
+      box-shadow: none;
+      cursor: default;
+      animation: correctDrop .38s ease;
+    }
+
+    .event-card.matched .event-icon { font-size: .9rem; }
+    .event-card.matched .event-text { font-size: .69rem; line-height: 1.25; }
+
+    .mobile-note {
+      display: none;
+      padding: 0 16px 13px;
+      color: var(--muted);
+      font-size: .7rem;
+      text-align: center;
+    }
+
+    .completion {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      overflow: hidden;
+      background: rgba(10,7,6,.82);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+    }
+
+    .completion.open { opacity: 1; visibility: visible; }
+
+    .gold-rays {
+      position: absolute;
+      width: 150vmax;
+      height: 150vmax;
+      background: repeating-conic-gradient(from 0deg, rgba(244,216,137,.16) 0 8deg, transparent 8deg 18deg);
+      animation: rotateRays 12s linear infinite;
+    }
+
+    .completion-card {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 450px);
+      padding: 36px 30px;
+      border: 3px double var(--gold-light);
+      color: var(--text);
+      background:
+        linear-gradient(135deg, rgba(217,173,85,.14), transparent),
+        var(--ink-soft);
+      box-shadow: 0 0 55px rgba(244,216,137,.32), var(--shadow);
+      text-align: center;
+      animation: victoryIn .55s cubic-bezier(.2,.85,.25,1.2);
+    }
+
+    .completion-seal {
+      width: 78px;
+      height: 78px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+      border: 2px solid var(--gold-light);
+      border-radius: 50%;
+      color: var(--gold-light);
+      background: var(--red);
+      box-shadow: 0 0 25px rgba(217,173,85,.32);
+      font-size: 2.2rem;
+    }
+
+    .completion h2 {
+      margin: 0 0 8px;
+      color: var(--gold-light);
+      font-size: 2.2rem;
+      letter-spacing: .12em;
+    }
+
+    .completion p { margin: 0 0 24px; color: var(--muted); }
+    .completion p strong { color: var(--gold-light); font-size: 1.5rem; }
+
+    .restart {
+      min-width: 170px;
+      min-height: 49px;
+      border: 1px solid #e87568;
+      color: #fff1e8;
+      background: var(--red);
+      box-shadow: inset 0 0 0 3px #6c201e, 0 6px 0 #541816;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: .12em;
+      transition: transform .12s ease;
+    }
+
+    .restart:hover { transform: translateY(-2px); }
+    .restart:active { transform: translateY(4px); }
+
+    @keyframes wrongFlash {
+      0%, 100% { background: var(--paper); transform: translateX(0); }
+      25% { background: #e68a7e; transform: translateX(-5px); }
+      50% { background: #f2a095; transform: translateX(5px); }
+      75% { background: #e68a7e; transform: translateX(-3px); }
+    }
+
+    @keyframes correctDrop {
+      0% { opacity: .3; transform: scale(.7); }
+      70% { transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes rotateRays { to { transform: rotate(360deg); } }
+
+    @keyframes victoryIn {
+      from { opacity: 0; transform: scale(.72) translateY(20px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .map-return {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 25;
+      padding: 9px 13px;
+      border: 2px solid #7c5336;
+      border-radius: 9px;
+      color: #5b3926;
+      background: #fff8e9;
+      box-shadow: 0 5px 14px rgba(91,58,31,.18);
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    /* 日系溫暖木質主題 */
+    :root {
+      --ink: #ead8b7;
+      --ink-soft: #fff9ed;
+      --panel: #f8edd9;
+      --paper: #fffaf0;
+      --paper-dark: #ead8b9;
+      --gold: #c99a43;
+      --gold-light: #e4bd69;
+      --gold-dark: #9a6d2e;
+      --red: #a65443;
+      --red-light: #c97a65;
+      --green: #648366;
+      --green-light: #8fa88d;
+      --text: #49382c;
+      --muted: #806d5c;
+      --line: rgba(105, 70, 43, .26);
+      --shadow: 0 18px 46px rgba(91, 58, 31, .18);
+    }
+
+    body {
+      color: var(--text);
+      background:
+        repeating-linear-gradient(90deg, rgba(117,77,43,.055) 0 1px, transparent 1px 36px),
+        repeating-linear-gradient(2deg, transparent 0 17px, rgba(117,77,43,.035) 18px 19px),
+        linear-gradient(135deg, rgba(255,255,255,.58), transparent 42%),
+        #ead8b7;
+    }
+
+    .masthead,
+    .section {
+      border: 2px solid #7c5336;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.55), transparent 45%),
+        var(--panel);
+      box-shadow: var(--shadow), inset 0 0 0 4px rgba(201,154,67,.1);
+    }
+
+    .masthead::before,
+    .masthead::after {
+      background: var(--gold);
+    }
+
+    h1,
+    .section-head h2,
+    .progress {
+      color: #70482e;
+      text-shadow: 0 1px 0 #fff9e9;
+    }
+
+    .seal {
+      border-color: #a8734c;
+      color: #fff5df;
+      background: #9d6044;
+      box-shadow: inset 0 0 0 3px #73422e;
+    }
+
+    .attempt-box {
+      border: 2px solid #8a5c3c;
+      border-radius: 5px;
+      background: #fff8e9;
+      box-shadow: inset 0 0 0 3px rgba(201,154,67,.13);
+    }
+
+    .attempt-box strong { color: #a7752f; }
+
+    .section-head {
+      border-bottom: 2px solid #b68b5d;
+      background: rgba(232,211,177,.38);
+    }
+
+    .dynasty-card {
+      border-color: #8b5d3d;
+      background:
+        linear-gradient(105deg, rgba(201,154,67,.07), transparent 35%),
+        var(--paper);
+      box-shadow: inset 0 0 0 4px rgba(201,154,67,.12), 0 7px 14px rgba(91,58,31,.1);
+    }
+
+    .dynasty-name {
+      border-bottom-color: #8b5d3d;
+      color: #5b3926;
+      background:
+        linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent),
+        var(--paper-dark);
+    }
+
+    .drop-zone:empty::before { color: rgba(91,57,38,.48); }
+
+    .event-card {
+      border-color: #8a583b;
+      border-left-color: var(--gold);
+      color: #4a3629;
+      background:
+        linear-gradient(135deg, rgba(201,154,67,.11), transparent 62%),
+        #fff9ee;
+      box-shadow: 0 6px 13px rgba(91,58,31,.12);
+    }
+
+    .event-card:hover {
+      border-color: var(--gold-dark);
+      background: #fffdf7;
+    }
+
+    .event-card.matched {
+      color: #fffdf4;
+      border-color: #527257;
+      background: #6c8a6c;
+    }
+
+    .completion {
+      background: rgba(74,48,31,.72);
+    }
+
+    .completion-card {
+      color: #49382c;
+      border-color: var(--gold);
+      background:
+        linear-gradient(135deg, rgba(201,154,67,.18), transparent 52%),
+        #fff8e9;
+      box-shadow: 0 0 55px rgba(228,189,105,.42), var(--shadow);
+    }
+
+    .completion h2 { color: #7c512f; }
+    .completion p { color: #806d5c; }
+    .completion p strong { color: #a7752f; }
+    .completion-seal {
+      color: #fff7e4;
+      background: #9d6044;
+    }
+
+    .restart {
+      border-color: #8c593e;
+      color: #fff8e9;
+      background: #9d6044;
+      box-shadow: inset 0 0 0 3px #70402e, 0 6px 0 #5d3527;
+    }
+
+    @media (max-width: 980px) {
+      .game-layout { grid-template-columns: 1fr; }
+      .event-panel { position: static; max-height: none; order: -1; }
+      .event-list {
+        display: flex;
+        min-height: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 18px;
+        scroll-snap-type: x proximity;
+      }
+      .event-card {
+        flex: 0 0 190px;
+        scroll-snap-align: start;
+      }
+      .mobile-note { display: block; }
+    }
+
+    @media (max-width: 620px) {
+      .page { width: min(100% - 18px, 1440px); padding-top: 10px; }
+      .masthead { align-items: flex-start; padding: 14px 16px; }
+      .seal { width: 43px; height: 43px; font-size: 1.15rem; }
+      .subtitle { display: none; }
+      .attempt-box { min-width: 80px; padding: 6px 9px; }
+      .dynasty-grid { grid-template-columns: 1fr; padding: 11px; }
+      .dynasty-card { min-height: 150px; }
+      .drop-zone { min-height: 98px; }
+      .drop-zone:empty::before { padding-top: 24px; }
+      .section-head { align-items: flex-start; flex-direction: column; gap: 4px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="map-return" href="../大冒險地圖/index.html">← 回到大地圖</a>
+  <main class="page">
+    <header class="masthead">
+      <div class="title-row">
+        <div class="seal" aria-hidden="true">史</div>
+        <div>
+          <h1>朝代配對</h1>
+          <p class="subtitle">將歷史事件送回它所屬的朝代，完成華夏時光卷軸。</p>
+        </div>
+      </div>
+      <div class="attempt-box" aria-live="polite">
+        <span>嘗試次數</span>
+        <strong id="attemptCount">0</strong>
+      </div>
+    </header>
+
+    <div class="game-layout">
+      <section class="section dynasty-panel">
+        <div class="section-head">
+          <div>
+            <h2>朝代史冊</h2>
+            <p>拖曳事件卡至正確朝代，可放入多張事件。</p>
+          </div>
+        </div>
+        <div class="dynasty-grid" id="dynastyGrid"></div>
+      </section>
+
+      <section class="section event-panel">
+        <div class="section-head">
+          <div>
+            <h2>待歸檔事件</h2>
+            <p>事件順序每局都會重新打亂。</p>
+          </div>
+          <div class="progress"><span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+        </div>
+        <div class="event-list" id="eventList"></div>
+        <div class="mobile-note">手機可先點選事件卡，再點選左欄朝代。</div>
+      </section>
+    </div>
+  </main>
+
+  <div class="completion" id="completion" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+    <div class="gold-rays" aria-hidden="true"></div>
+    <div class="completion-card">
+      <div class="completion-seal" aria-hidden="true">成</div>
+      <h2 id="completionTitle">配對完成</h2>
+      <p>你用 <strong id="finalAttempts">0</strong> 次嘗試完成了所有事件！</p>
+      <button class="restart" id="restartButton">再玩一次</button>
+    </div>
+  </div>
+
+  <script>
+    const dynasties = [
+      { id: 1, name: "秦" },
+      { id: 2, name: "漢" },
+      { id: 3, name: "唐" },
+      { id: 4, name: "宋" },
+      { id: 5, name: "明" },
+      { id: 6, name: "清" }
+    ];
+
+    const events = [
+      { id: "e1",  dynasty_id: 1, text: "統一六國", icon: "⚔️" },
+      { id: "e2",  dynasty_id: 1, text: "修築萬里長城", icon: "🧱" },
+      { id: "e3",  dynasty_id: 1, text: "焚書坑儒", icon: "🔥" },
+      { id: "e4",  dynasty_id: 2, text: "張騫通西域", icon: "🐪" },
+      { id: "e5",  dynasty_id: 2, text: "文景之治", icon: "📜" },
+      { id: "e6",  dynasty_id: 2, text: "罷黜百家獨尊儒術", icon: "📖" },
+      { id: "e7",  dynasty_id: 3, text: "貞觀之治", icon: "👑" },
+      { id: "e8",  dynasty_id: 3, text: "安史之亂", icon: "💥" },
+      { id: "e9",  dynasty_id: 3, text: "玄奘西行取經", icon: "🧘" },
+      { id: "e10", dynasty_id: 4, text: "王安石變法", icon: "📜" },
+      { id: "e11", dynasty_id: 4, text: "岳飛抗金", icon: "🗡️" },
+      { id: "e12", dynasty_id: 5, text: "鄭和下西洋", icon: "⛵" },
+      { id: "e13", dynasty_id: 5, text: "永樂大典編成", icon: "📚" },
+      { id: "e14", dynasty_id: 6, text: "鴉片戰爭", icon: "💣" },
+      { id: "e15", dynasty_id: 6, text: "康熙盛世", icon: "🌅" },
+      { id: "e16", dynasty_id: 6, text: "辛亥革命終結", icon: "🏛️" }
+    ];
+
+    const dynastyGrid = document.getElementById("dynastyGrid");
+    const eventList = document.getElementById("eventList");
+    const attemptCount = document.getElementById("attemptCount");
+    const matchedCount = document.getElementById("matchedCount");
+    const totalCount = document.getElementById("totalCount");
+    const completion = document.getElementById("completion");
+    const finalAttempts = document.getElementById("finalAttempts");
+    const restartButton = document.getElementById("restartButton");
+
+    let attempts = 0;
+    let matches = 0;
+    let draggedEventId = null;
+    let selectedEventId = null;
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let index = copy.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
+      }
+      return copy;
+    }
+
+    function createEventCard(event) {
+      const card = document.createElement("div");
+      card.className = "event-card";
+      card.id = `card-${event.id}`;
+      card.draggable = true;
+      card.tabIndex = 0;
+      card.dataset.eventId = event.id;
+      card.innerHTML = `
+        <span class="event-icon" aria-hidden="true">${event.icon}</span>
+        <span class="event-text">${event.text}</span>
+      `;
+
+      card.addEventListener("dragstart", handleDragStart);
+      card.addEventListener("dragend", handleDragEnd);
+      card.addEventListener("click", () => selectEvent(event.id));
+      card.addEventListener("keydown", (keyboardEvent) => {
+        if (keyboardEvent.key === "Enter" || keyboardEvent.key === " ") {
+          keyboardEvent.preventDefault();
+          selectEvent(event.id);
+        }
+      });
+      return card;
+    }
+
+    function renderGame() {
+      dynastyGrid.innerHTML = "";
+      eventList.innerHTML = "";
+      attempts = 0;
+      matches = 0;
+      draggedEventId = null;
+      selectedEventId = null;
+      attemptCount.textContent = "0";
+      matchedCount.textContent = "0";
+      totalCount.textContent = events.length;
+      completion.classList.remove("open");
+
+      dynasties.forEach((dynasty) => {
+        const card = document.createElement("article");
+        card.className = "dynasty-card";
+        card.dataset.dynastyId = dynasty.id;
+        card.innerHTML = `
+          <div class="dynasty-name">${dynasty.name}</div>
+          <div class="drop-zone" data-dynasty-id="${dynasty.id}" aria-label="${dynasty.name}朝事件掉落區"></div>
+        `;
+
+        const dropZone = card.querySelector(".drop-zone");
+        dropZone.addEventListener("dragover", handleDragOver);
+        dropZone.addEventListener("dragenter", handleDragEnter);
+        dropZone.addEventListener("dragleave", handleDragLeave);
+        dropZone.addEventListener("drop", handleDrop);
+        dropZone.addEventListener("click", () => {
+          if (selectedEventId) attemptMatch(selectedEventId, dynasty.id);
+        });
+        dynastyGrid.appendChild(card);
+      });
+
+      shuffle(events).forEach((event) => eventList.appendChild(createEventCard(event)));
+    }
+
+    function handleDragStart(event) {
+      draggedEventId = event.currentTarget.dataset.eventId;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", draggedEventId);
+      requestAnimationFrame(() => event.currentTarget.classList.add("dragging"));
+    }
+
+    function handleDragEnd(event) {
+      event.currentTarget.classList.remove("dragging");
+      document.querySelectorAll(".dynasty-card").forEach((card) => card.classList.remove("drag-over"));
+      draggedEventId = null;
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    }
+
+    function handleDragEnter(event) {
+      event.preventDefault();
+      event.currentTarget.closest(".dynasty-card").classList.add("drag-over");
+    }
+
+    function handleDragLeave(event) {
+      const dynastyCard = event.currentTarget.closest(".dynasty-card");
+      if (!dynastyCard.contains(event.relatedTarget)) dynastyCard.classList.remove("drag-over");
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+      const dropZone = event.currentTarget;
+      dropZone.closest(".dynasty-card").classList.remove("drag-over");
+      const eventId = event.dataTransfer.getData("text/plain") || draggedEventId;
+      attemptMatch(eventId, Number(dropZone.dataset.dynastyId));
+    }
+
+    function selectEvent(eventId) {
+      const card = document.getElementById(`card-${eventId}`);
+      if (!card || card.classList.contains("matched")) return;
+
+      document.querySelectorAll(".event-card.selected").forEach((item) => item.classList.remove("selected"));
+      document.querySelectorAll(".dynasty-card.selected-target").forEach((item) => item.classList.remove("selected-target"));
+
+      if (selectedEventId === eventId) {
+        selectedEventId = null;
+        return;
+      }
+
+      selectedEventId = eventId;
+      card.classList.add("selected");
+      document.querySelectorAll(".dynasty-card").forEach((item) => item.classList.add("selected-target"));
+    }
+
+    function attemptMatch(eventId, dynastyId) {
+      const eventData = events.find((item) => item.id === eventId);
+      const card = document.getElementById(`card-${eventId}`);
+      const targetCard = document.querySelector(`.dynasty-card[data-dynasty-id="${dynastyId}"]`);
+      if (!eventData || !card || card.classList.contains("matched")) return;
+
+      attempts += 1;
+      attemptCount.textContent = attempts;
+
+      if (eventData.dynasty_id === dynastyId) {
+        const dropZone = targetCard.querySelector(".drop-zone");
+        card.classList.remove("selected", "dragging");
+        card.classList.add("matched");
+        card.draggable = false;
+        card.tabIndex = -1;
+        dropZone.appendChild(card);
+        matches += 1;
+        matchedCount.textContent = matches;
+        clearSelection();
+        if (matches === events.length) {
+          setTimeout(showCompletion, 480);
+        }
+      } else {
+        targetCard.classList.remove("wrong");
+        void targetCard.offsetWidth;
+        targetCard.classList.add("wrong");
+        card.classList.remove("dragging");
+        clearSelection();
+      }
+    }
+
+    function clearSelection() {
+      selectedEventId = null;
+      document.querySelectorAll(".event-card.selected").forEach((item) => item.classList.remove("selected"));
+      document.querySelectorAll(".dynasty-card.selected-target").forEach((item) => item.classList.remove("selected-target"));
+    }
+
+    function showCompletion() {
+      localStorage.setItem("cert_dynasty", "true");
+      finalAttempts.textContent = attempts;
+      completion.classList.add("open");
+      restartButton.focus();
+    }
+
+    restartButton.addEventListener("click", renderGame);
+    renderGame();
+  </script>
+</body>
+</html>
